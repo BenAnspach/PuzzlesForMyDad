@@ -1,0 +1,23 @@
+:root {
+  --sans: Georgia, 'Times New Roman', serif;
+
+  font: 18px/145% var(--sans);
+  color: #244635;
+  background: #f6f3e9;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100svh;
+}
