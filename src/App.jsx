@@ -96,6 +96,7 @@ function App() {
       if (direction === 'down') nextRow += 1
 
       if (nextRow < 0 || nextRow > 2 || nextColumn < 0 || nextColumn > 2) {
+        if (current === 4 && direction === 'left') return 3
         return current
       }
 
@@ -220,11 +221,22 @@ function App() {
               />
             ))}
           </div>
+          {allLinesSnapped && (
+            <div className="speech-bubble" role="status">
+              <p>Welcome to Puzzles for my Dad. I&apos;m the sun and I&apos;ll be your guide.</p>
+              <p>
+                To solve my riddles 50 you will be faced with many challenges. You will be
+                expected to problem solve, think outside of the box, and will probably need
+                to use Google because there are a lot of references for my dad in here.
+              </p>
+              <p>This stage can be your warmup but after that, good luck.</p>
+            </div>
+          )}
         </>
       )}
       {puzzle === 2 && (
         <>
-          <div className="page-sun" aria-hidden="true">☀</div>
+          <img className="page-sun" src="/img/sun.png" alt="Sun" />
           <div className="page-speech" role="status">
             <p>Ah, a riddle, how devastatingly tricky.</p>
           </div>
@@ -233,7 +245,7 @@ function App() {
       )}
       {puzzle === 3 && (
         <>
-          <div className="page-sun" aria-hidden="true">☀</div>
+          <img className="page-sun" src="/img/sun.png" alt="Sun" />
           <div className="page-speech" role="status">
             <p>
               {allLinesSnapped
@@ -311,15 +323,13 @@ function App() {
           )}
         </>
       )}
-      {isGridPage && (
-        <section className="grid-page" aria-label="Puzzle grid">
-          <p className="grid-page-label">
-            Grid page {gridRow + 1}, {gridColumn + 1}
-          </p>
-          <div className="grid-page-mark" aria-hidden="true">
-            {gridIndex + 1}
+      {puzzle === 9 && (
+        <>
+          <img className="page-sun boat-clue-sun" src="/img/sun.png" alt="Sun" />
+          <div className="page-speech boat-clue-speech" role="status">
+            <p>If only you could find a boat you could find the treasure.</p>
           </div>
-        </section>
+        </>
       )}
       {!isGridPage && <nav className="puzzle-navigation" aria-label="Puzzle navigation">
         <button
@@ -341,7 +351,7 @@ function App() {
       </nav>}
       {isGridPage && (
         <nav className="grid-navigation" aria-label="Grid page navigation">
-          <button type="button" className="grid-arrow grid-arrow-left" onClick={() => moveThroughGrid('left')} disabled={gridColumn === 0} aria-label="Move left">←</button>
+          <button type="button" className="grid-arrow grid-arrow-left" onClick={() => moveThroughGrid('left')} disabled={gridColumn === 0 && puzzle !== 4} aria-label="Move left">←</button>
           <button type="button" className="grid-arrow grid-arrow-right" onClick={() => moveThroughGrid('right')} disabled={gridColumn === 2} aria-label="Move right">→</button>
           <button type="button" className="grid-arrow grid-arrow-up" onClick={() => moveThroughGrid('up')} disabled={gridRow === 0} aria-label="Move up">↑</button>
           <button type="button" className="grid-arrow grid-arrow-down" onClick={() => moveThroughGrid('down')} disabled={gridRow === 2} aria-label="Move down">↓</button>
