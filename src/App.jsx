@@ -21,6 +21,33 @@ const snapSlots = Array.from({ length: 8 }, (_, index) => {
     y: 50 - Math.cos(radians) * 28,
   }
 })
+const letterGridRows = [
+  'UJNLQAIRUP',
+  'XUETLASPXT',
+  'FATNTWHMBT',
+  'FRBICTLQON',
+  'GCWPHMDBVV',
+  'CDAGMDSFHA',
+  'ALIRGABLBF',
+  'MMOBWGDFTZ',
+  'TRIUQSTLMO',
+  'KTDCKBVDWJ',
+]
+const sineWavePath = Array.from({ length: 281 }, (_, index) => {
+  const x = (index / 280) * 600
+  const y = 90 - 70 * Math.sin((x / 600) * Math.PI * 14)
+
+  return `${index === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`
+}).join(' ')
+const wavePeriod = 600 / 7
+const sineWaveMarks = [
+  { x: wavePeriod * 2, y: 90 },
+  { x: wavePeriod * 2 + wavePeriod / 4, y: 20 },
+  { x: wavePeriod * 2 + (wavePeriod * 3) / 4, y: 160 },
+  { x: wavePeriod * 3, y: 90 },
+  { x: wavePeriod * 3 + wavePeriod / 4, y: 20 },
+]
+const sineFiles = Array.from({ length: 500 }, (_, index) => `${index + 1}.sine`)
 
 function getNearestOpenSlot(x, y, rotation, lines, lineIndex) {
   const matchingSlots = snapSlots.filter(
@@ -45,6 +72,36 @@ function App() {
   const [puzzle, setPuzzle] = useState(1)
   const [lines, setLines] = useState(initialLines)
   const [draggingLine, setDraggingLine] = useState(null)
+  const [password, setPassword] = useState('')
+  const [showSineFiles, setShowSineFiles] = useState(false)
+  const allLinesSnapped = lines.every((line) => line.slot !== null)
+  const isGridPage = puzzle >= 4
+  const gridIndex = puzzle - 4
+  const gridRow = Math.floor(gridIndex / 3)
+  const gridColumn = gridIndex % 3
+
+  const moveThroughGrid = (direction) => {
+    setPuzzle((current) => {
+      if (current < 4) return current
+
+      const currentIndex = current - 4
+      const row = Math.floor(currentIndex / 3)
+      const column = currentIndex % 3
+      let nextRow = row
+      let nextColumn = column
+
+      if (direction === 'left') nextColumn -= 1
+      if (direction === 'right') nextColumn += 1
+      if (direction === 'up') nextRow -= 1
+      if (direction === 'down') nextRow += 1
+
+      if (nextRow < 0 || nextRow > 2 || nextColumn < 0 || nextColumn > 2) {
+        return current
+      }
+
+      return 4 + nextRow * 3 + nextColumn
+    })
+  }
 
   useEffect(() => {
     if (draggingLine === null) return undefined
@@ -165,7 +222,106 @@ function App() {
           </div>
         </>
       )}
-      <nav className="puzzle-navigation" aria-label="Puzzle navigation">
+      {puzzle === 2 && (
+        <>
+          <div className="page-sun" aria-hidden="true">☀</div>
+          <div className="page-speech" role="status">
+            <p>Ah, a riddle, how devastatingly tricky.</p>
+          </div>
+          <div className="question-box">Who was this puzzle made for?</div>
+        </>
+      )}
+      {puzzle === 3 && (
+        <>
+          <div className="page-sun" aria-hidden="true">☀</div>
+          <div className="page-speech" role="status">
+            <p>
+              {allLinesSnapped
+                ? 'The answer to puzzle 2 and then the number of lines I have.'
+                : "I'm not feeling very put together."}
+            </p>
+          </div>
+          <label className="password-box">
+            <span>Password</span>
+            <input
+              type="text"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete="off"
+            />
+          </label>
+        </>
+      )}
+      {puzzle === 5 && (
+        <>
+          <div className="word-search-prompts">
+            <p>A spray of water</p>
+            <p>An object to plug your guitar into</p>
+            <p>A fast food burger without size specification</p>
+            <p>A synonym for strong</p>
+            <p>A part of a tree</p>
+          </div>
+          <div className="letter-grid" aria-label="Letter grid">
+            {letterGridRows.flatMap((row, rowIndex) =>
+              row.split('').map((letter, columnIndex) => (
+                <span key={`${rowIndex}-${columnIndex}`}>{letter}</span>
+              )),
+            )}
+          </div>
+        </>
+      )}
+      {puzzle === 6 && (
+        <>
+          <div className="sine-wave-message" role="status">
+            Oh no! Someone damaged my sine wave. I need a real champ to figure out which file
+            to repair.
+          </div>
+          <svg
+            className="sine-wave"
+            viewBox="0 0 600 180"
+            preserveAspectRatio="none"
+            role="img"
+            aria-label="Sine wave"
+          >
+            <path d={sineWavePath} />
+            {sineWaveMarks.map((mark, index) => (
+              <g key={`${mark.x}-${index}`} transform={`translate(${mark.x} ${mark.y})`}>
+                <line x1="-9" y1="-9" x2="9" y2="9" />
+                <line x1="9" y1="-9" x2="-9" y2="9" />
+              </g>
+            ))}
+          </svg>
+          <button
+            type="button"
+            className="folder-button"
+            onClick={() => setShowSineFiles((isVisible) => !isVisible)}
+            aria-label={showSineFiles ? 'Close sine files' : 'Open sine files'}
+          >
+            <i className="folder-icon" aria-hidden="true" />
+          </button>
+          {showSineFiles && (
+            <div className="sine-file-tiles" aria-label="Sine files">
+              {sineFiles.map((fileName) => (
+                <span key={fileName}>
+                  <i className="file-icon" aria-hidden="true" />
+                  {fileName}
+                </span>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+      {isGridPage && (
+        <section className="grid-page" aria-label="Puzzle grid">
+          <p className="grid-page-label">
+            Grid page {gridRow + 1}, {gridColumn + 1}
+          </p>
+          <div className="grid-page-mark" aria-hidden="true">
+            {gridIndex + 1}
+          </div>
+        </section>
+      )}
+      {!isGridPage && <nav className="puzzle-navigation" aria-label="Puzzle navigation">
         <button
           type="button"
           className="back-button"
@@ -177,11 +333,20 @@ function App() {
         <button
           type="button"
           className="next-button"
-          onClick={() => setPuzzle((current) => (current % 3) + 1)}
+          onClick={() => setPuzzle((current) => current + 1)}
+          disabled={puzzle === 3 && password !== 'dad8'}
         >
           Next <span aria-hidden="true">→</span>
         </button>
-      </nav>
+      </nav>}
+      {isGridPage && (
+        <nav className="grid-navigation" aria-label="Grid page navigation">
+          <button type="button" className="grid-arrow grid-arrow-left" onClick={() => moveThroughGrid('left')} disabled={gridColumn === 0} aria-label="Move left">←</button>
+          <button type="button" className="grid-arrow grid-arrow-right" onClick={() => moveThroughGrid('right')} disabled={gridColumn === 2} aria-label="Move right">→</button>
+          <button type="button" className="grid-arrow grid-arrow-up" onClick={() => moveThroughGrid('up')} disabled={gridRow === 0} aria-label="Move up">↑</button>
+          <button type="button" className="grid-arrow grid-arrow-down" onClick={() => moveThroughGrid('down')} disabled={gridRow === 2} aria-label="Move down">↓</button>
+        </nav>
+      )}
     </main>
   )
 }
